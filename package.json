@@ -1,5 +1,6 @@
 {
   "name": "twofa",
+  "version": "0.1.0",
   "description": "Two Factor Authencaticator Generator",
   "license": "MIT",
   "repository": "paulovitin/twofa",
