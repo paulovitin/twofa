@@ -26,11 +26,13 @@
     "tfa"
   ],
   "devDependencies": {
+    "coveralls": "^3.0.0",
     "jest": "^22.4.3",
     "tempy": "^0.2.1"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "coverage": "cat ./coverage/lcov.info | coveralls"
   },
   "dependencies": {
     "bluebird": "^3.5.1",
