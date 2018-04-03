@@ -16,6 +16,9 @@ const QRCODE = {
 
 const SERVICE = 'tester';
 
+const mockCaptureSuccess = () => Promise.resolve(QRCODE.qrcodeImage);
+const mockCaptureError = () => Promise.reject();
+
 describe('TwoFA', () => {
   let twofa;
 
@@ -55,7 +58,25 @@ describe('TwoFA', () => {
     }).catch(() => done());
   });
 
+  test('Can I try add a service and cancel the capture?', done => {
+    twofa.screencap = mockCaptureError;
+    twofa.add(SERVICE).catch(() => done());
+  });
+
   test('Can I add a service and generate a valid code?', done => {
+    twofa.screencap = mockCaptureSuccess;
+    twofa.add(SERVICE)
+      .then(code => {
+        expect(code).toMatchObject({
+          service: SERVICE,
+          code: QRCODE.code,
+          label: QRCODE.account,
+        });
+        done();
+      });
+  });
+
+  test('Can I add a service and generate a valid code using imagePath?', done => {
     twofa.add(SERVICE, {
       imagePath: QRCODE.qrcodeImage,
     })
@@ -85,8 +106,7 @@ describe('TwoFA', () => {
   });
 
   test('Can I get an exception to try delete a not found service?', done => {
-    twofa.del(SERVICE)
-      .catch(() => done());
+    twofa.del(SERVICE).catch(() => done());
   });
 
   test('Can I delete a service?', done => {
@@ -100,8 +120,7 @@ describe('TwoFA', () => {
   });
 
   test('Can I get an exception to ask a qrcode for a not found service?', done => {
-    twofa.qrcode(SERVICE)
-      .catch(() => done());
+    twofa.qrcode(SERVICE).catch(() => done());
   });
 
   test('Can I get a qrcode for a service?', done => {

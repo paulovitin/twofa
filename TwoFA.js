@@ -1,16 +1,20 @@
-const Promise = require('bluebird');
+const promisify = func => (...args) =>
+  new Promise((resolve, reject) =>
+    func(...args, (err, result) => (err ? reject(err) : resolve(result)))
+  );
 
 const Conf = require('conf');
-const jimpRead = Promise.promisify(require('jimp').read);
+const jimpRead = promisify(require('jimp').read);
 const jsQR = require('jsqr');
 const fs = require('fs');
 const OTPAuth = require('otpauth');
 const qrcode = require('qrcode-terminal');
-const screencapture = Promise.promisify(require('screencapture'));
+const screencapture = promisify(require('screencapture'));
 
 class TwoFA {
   constructor() {
     this.store = new Conf(this);
+    this.screencap = screencapture;
   }
 
   add(service, options) {
@@ -57,7 +61,7 @@ class TwoFA {
   }
 
   _captureAndReadQRCode() {
-    return screencapture()
+    return this.screencap()
       .then(imagePath => {
         this.lastQRCode = imagePath;
         return imagePath;
