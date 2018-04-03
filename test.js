@@ -59,7 +59,6 @@ describe('TwoFA', () => {
     twofa.add(SERVICE, {
       imagePath: QRCODE.qrcodeImage,
     })
-    .then(() => twofa.gen(SERVICE))
     .then(code => {
       expect(code).toMatchObject({
         service: SERVICE,

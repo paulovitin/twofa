@@ -13,6 +13,10 @@ const __stdout = message => {
 
 __stdout.error = message => __stdout(chalk.red.bold(message));
 __stdout.success = message => __stdout(chalk.green(message));
+__stdout.code = code =>
+  __stdout.success(
+    `The code for "${code.service} - ${code.label}" is: ${code.code}`
+  );
 
 program
   .command('add <service>')
@@ -22,9 +26,10 @@ program
     twofa.add(service, {
       imagePath: cmd.image,
     })
-    .then(() =>
-      __stdout.success(`The "${service}" added with success!`)
-    )
+    .then(code => {
+      __stdout.success(`The "${service}" added with success!`);
+      __stdout.code(code);
+    })
     .catch(error => __stdout.error(error));
   });
 
@@ -45,9 +50,8 @@ program
   .action(service => {
     twofa.gen(service)
       .then(code => {
-        const msg = `The code for "${service} - ${code.label}" is: ${code.code}`;
         if (service) {
-          return __stdout.success(msg);
+          return __stdout.code(code);
         }
 
         if (!Array.isArray(code)) {

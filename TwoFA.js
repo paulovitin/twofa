@@ -25,7 +25,8 @@ class TwoFA {
 
     return promise
       .then(uri => OTPAuth.URI.parse(uri))
-      .then(otpauth => this.store.set(service, otpauth.toString()));
+      .then(otpauth => this.store.set(service, otpauth.toString()))
+      .then(() => this.gen(service));
   }
 
   del(service) {
