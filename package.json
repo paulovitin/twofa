@@ -1,6 +1,6 @@
 {
   "name": "twofa",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Two Factor Authencaticator Generator",
   "license": "MIT",
   "repository": "paulovitin/twofa",
@@ -40,6 +40,7 @@
     "cli-table": "^0.3.1",
     "commander": "^2.15.1",
     "conf": "^1.4.0",
+    "execa": "^0.10.0",
     "jimp": "^0.2.28",
     "jsqr": "^1.0.4",
     "otpauth": "^3.1.3",

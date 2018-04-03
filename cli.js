@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 const chalk = require('chalk');
-const columnify = require('columnify');
 const program = require('commander')
 const Table = require('cli-table');
+const qrcodeGen = require('qrcode-terminal');
 const TwoFA = require('./TwoFA');
 
 const twofa = new TwoFA();
@@ -32,7 +32,11 @@ program
   .command('del <service>')
   .description('Delete a service registered')
   .action(service => {
-    twofa.del(service);
+    twofa.del(service)
+      .then(() =>
+        __stdout.success(`The "${service}" deleted with success!`)
+      )
+      .catch(error => __stdout.error(error));
   });
 
 program
@@ -67,7 +71,12 @@ program
   .command('qrcode <service>')
   .description('Generate qrcode from a service')
   .action(service => {
-    twofa.qrcode(service);
+    twofa.qrcode(service)
+      .then(qrcode => {
+        __stdout.success(`Show QRCode for "${service}".\n`);
+        console.log(qrcode);
+      })
+      .catch(e => __stdout.error(e));
   });
 
 program.parse(process.argv);

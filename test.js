@@ -1,5 +1,6 @@
 const Conf = require('conf');
 const tempy = require('tempy');
+const execa = require('execa');
 
 const TwoFA = require('./TwoFA.js');
 
@@ -27,7 +28,7 @@ describe('TwoFA', () => {
     twofa.store.set(SERVICE, true);
     twofa.add(SERVICE)
       .catch(e => {
-        expect(e).toEqual(`A service with name '${SERVICE}' not exists.`);
+        expect(e).toEqual(`A service with name '${SERVICE}' already exists.`);
         done();
       });
   });
@@ -84,7 +85,7 @@ describe('TwoFA', () => {
     });
   });
 
-  test('Can I get an exception to try delete a not found service?', () => {
+  test('Can I get an exception to try delete a not found service?', done => {
     twofa.del(SERVICE)
       .catch(() => done());
   });
@@ -103,5 +104,80 @@ describe('TwoFA', () => {
     twofa.qrcode(SERVICE)
       .catch(() => done());
   });
-})
 
+  test('Can I get a qrcode for a service?', done => {
+    twofa.add(SERVICE, {
+      imagePath: QRCODE.qrcodeImage,
+    })
+    .then(() => twofa.qrcode(SERVICE))
+    .then(qrcode => {
+      expect(qrcode).toBeTruthy();
+      done();
+    })
+  });
+});
+
+describe('twofa-cli', () => {
+  beforeAll(() => {
+    execa.shellSync(`./cli.js del ${SERVICE}`)
+  });
+
+  test('Help?', () => {
+    const exc = execa.shellSync('./cli.js --help');
+    expect(exc.stdout).toMatch(/add \[options\] <service>/);
+    expect(exc.stdout).toMatch(/del <service>/);
+    expect(exc.stdout).toMatch(/gen \[service\]/);
+    expect(exc.stdout).toMatch(/qrcode <service>/);
+  });
+
+  test('Generate all codes from my services without services', () => {
+    const exc = execa.shellSync('./cli.js gen');
+    expect(exc.stdout).toMatch(/Listing all services and your codes/);
+  });
+
+  test('Add a service using image', () => {
+    const exc = execa.shellSync(`./cli.js add ${SERVICE} --image ${QRCODE.qrcodeImage}`);
+    expect(exc.stdout).toMatch(/added with success/);
+  });
+
+  test('Try adding an existing service name using image', () => {
+    const exc = execa.shellSync(`./cli.js add ${SERVICE} --image ${QRCODE.qrcodeImage}`);
+    expect(exc.stdout).toMatch(new RegExp(`'${SERVICE}' already exists`));
+  });
+
+  test('Generate a code using service name', () => {
+    const exc = execa.shellSync(`./cli.js gen ${SERVICE}`);
+    expect(exc.stdout).toMatch(new RegExp(QRCODE.code));
+  });
+
+  test('Try generate a code for a nonexistent service', () => {
+    const exc = execa.shellSync(`./cli.js gen test`);
+    expect(exc.stdout).toMatch(new RegExp("'test' not exists."));
+  });
+
+  test('Generate all codes from my services', () => {
+    const exc = execa.shellSync('./cli.js gen');
+    expect(exc.stdout).toMatch(new RegExp(QRCODE.code));
+    expect(exc.stdout).toMatch(new RegExp(QRCODE.account));
+  });
+
+  test('Try generate a qrcode for a nonexistent service', () => {
+    const exc = execa.shellSync(`./cli.js qrcode test`);
+    expect(exc.stdout).toMatch(new RegExp("'test' not exists."));
+  });
+
+  test('Generate a qrcode for a service', () => {
+    const exc = execa.shellSync(`./cli.js qrcode ${SERVICE}`);
+    expect(exc.stdout).toMatch(new RegExp(`Show QRCode for "${SERVICE}"`));
+  });
+
+  test('Try delete a nonexistent service', () => {
+    const exc = execa.shellSync(`./cli.js del test`);
+    expect(exc.stdout).toMatch(new RegExp("'test' not exists."));
+  });
+
+  test('Try delete a nonexistent service', () => {
+    const exc = execa.shellSync(`./cli.js del ${SERVICE}`);
+    expect(exc.stdout).toMatch(new RegExp(`The "${SERVICE}" deleted with success!`));
+  });
+});

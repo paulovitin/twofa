@@ -5,7 +5,7 @@ const jimpRead = Promise.promisify(require('jimp').read);
 const jsQR = require('jsqr');
 const fs = require('fs');
 const OTPAuth = require('otpauth');
-const qrcodeGen = require('qrcode-terminal').generate;
+const qrcode = require('qrcode-terminal');
 const screencapture = Promise.promisify(require('screencapture'));
 
 class TwoFA {
@@ -17,7 +17,7 @@ class TwoFA {
     options = options || {};
 
     if (this._storeExists(service)) {
-      return Promise.reject(`A service with name '${service}' not exists.`);
+      return Promise.reject(`A service with name '${service}' already exists.`);
     }
 
     const promise = options.imagePath ?
@@ -47,12 +47,12 @@ class TwoFA {
   }
 
   qrcode(service) {
-    const uri = this._storeGet(service);
-    return new Promise((resolve, reject) => {
-      qrcodeGen(uri, { small: true }, qrcode => {
-        resolve(qrcode);
+    return this._storeGet(service)
+      .then(uri => {
+        return new Promise(resolve =>
+          qrcode.generate(uri, { small: true }, qrcode => resolve(qrcode))
+        )
       });
-    });
   }
 
   _captureAndReadQRCode() {
