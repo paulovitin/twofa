@@ -1,6 +1,7 @@
 const Conf = require('conf');
 const tempy = require('tempy');
 const execa = require('execa');
+const path = require('path');
 
 const TwoFA = require('./TwoFA.js');
 
@@ -8,16 +9,16 @@ const QRCODE = {
   account: 'blablabla',
   secret: 'zalaveavhwdtp4p4lzge5vl5mezvtk73',
   uri: 'otpauth://hotp/blablabla?secret=zalaveavhwdtp4p4lzge5vl5mezvtk73&algorithm=SHA256&digits=6&period=Infinity&counter=0',
-  qrcodeImage: './qrcode.png',
-  qrcodeImageError: './qrcode_error.png',
-  qrcodeImageInvalid: './qrcode_invalid.png',
+  qrcodeImage: path.join(__dirname, '/assets/qrcode.png'),
+  qrcodeImageError: path.join(__dirname, '/assets/qrcode_error.png'),
+  qrcodeImageInvalid: path.join(__dirname, '/assets/qrcode_invalid.png'),
   code: '127211',
 };
 
 const SERVICE = 'tester';
 
 const mockCaptureSuccess = () => Promise.resolve(QRCODE.qrcodeImage);
-const mockCaptureError = () => Promise.reject();
+const mockCaptureError = () => Promise.reject({});
 
 describe('TwoFA', () => {
   let twofa;
