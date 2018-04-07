@@ -1,7 +1,10 @@
 # twofa
 > Two Factor Authentication Generator for CLI
 
-[![npm version](https://img.shields.io/npm/v/twofa.svg?style=flat-square)](https://www.npmjs.com/package/twofa) [![Build Status](https://img.shields.io/travis/paulovitin/twofa/master.svg?style=flat-square)](https://travis-ci.org/paulovitin/twofa) [![Coverage Status](https://img.shields.io/coveralls/paulovitin/twofa/master.svg?style=flat-square)](https://coveralls.io/github/paulovitin/twofa?branch=master)
+[![npm version](https://img.shields.io/npm/v/twofa.svg?style=flat-square)](https://www.npmjs.com/package/twofa)
+[![Build Status] (https://img.shields.io/travis/paulovitin/twofa/master.svg?style=flat-square)](https://travis-ci.org/paulovitin/twofa)
+[![AppVeyor](https://img.shields.io/appveyor/ci/paulovitin/twofa.svg?style=flat-square&logo=appveyor)](https://ci.appveyor.com/project/paulovitin/twofa)
+[![Coverage Status](https://img.shields.io/coveralls/paulovitin/twofa/master.svg?style=flat-square)](https://coveralls.io/github/paulovitin/twofa?branch=master)
 
 ## Install
 
