@@ -1,6 +1,6 @@
 {
   "name": "twofa",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Two Factor Authencaticator Generator",
   "license": "MIT",
   "repository": "paulovitin/twofa",
@@ -36,8 +36,8 @@
     "coverage": "cat ./coverage/lcov.info | coveralls"
   },
   "dependencies": {
-    "chalk": "^2.3.2",
     "cli-table": "^0.3.1",
+    "clipboardy": "^1.2.3",
     "commander": "^2.15.1",
     "conf": "^1.4.0",
     "jimp": "^0.2.28",

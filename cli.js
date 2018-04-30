@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const chalk = require('chalk');
+const clipboardy = require('clipboardy');
 const program = require('commander')
 const Table = require('cli-table');
 const qrcodeGen = require('qrcode-terminal');
@@ -11,8 +11,10 @@ const __stdout = message => {
   console.log(message);
 };
 
-__stdout.error = message => __stdout(chalk.red.bold(message));
-__stdout.success = message => __stdout(chalk.green(message));
+__stdout.error = message =>
+  __stdout(`\x1b[31m[1m${message}`);
+__stdout.success = message =>
+  __stdout(`\x1b[32m[1m${message}`);
 __stdout.code = code =>
   __stdout.success(
     `The code for "${code.service} - ${code.label}" is: ${code.code}`
@@ -28,6 +30,7 @@ program
     })
     .then(code => {
       __stdout.success(`The "${service}" added with success!`);
+      clipboardy.writeSync(code.code);
       __stdout.code(code);
     })
     .catch(error => __stdout.error(error));
@@ -51,6 +54,7 @@ program
     twofa.gen(service)
       .then(code => {
         if (service) {
+          clipboardy.writeSync(code.code);
           return __stdout.code(code);
         }
 

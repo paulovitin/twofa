@@ -59,10 +59,10 @@ $ twofa del github
 Generate the Authentication code from a service
 
 ```shell
-$ twofa gen github
+$ twofa gen github // the code goes to your clipboard
 ```
 
-Or generate a list of registered codes ommiting the service-name
+Or generate a list of registered codes omitting the service-name
 
 ```shell
 $ twofa gen

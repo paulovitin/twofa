@@ -1,3 +1,4 @@
+const clipboardy = require('clipboardy');
 const Conf = require('conf');
 const tempy = require('tempy');
 const path = require('path');
@@ -173,6 +174,12 @@ describe('twofa-cli', () => {
   test('Generate a code using service name', () => {
     const stdout = runCommand(['gen', SERVICE]);
     expect(stdout).toMatch(new RegExp(QRCODE.code));
+  });
+
+  test('Generate a code using service name and the code is in my clipboard?', () => {
+    const stdout = runCommand(['gen', SERVICE]);
+    expect(stdout).toMatch(new RegExp(QRCODE.code));
+    expect(stdout).toMatch(clipboardy.readSync());
   });
 
   test('Try generate a code for a nonexistent service', () => {
