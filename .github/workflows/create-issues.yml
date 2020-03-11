@@ -4,11 +4,11 @@ on:
     type: [created]
 
 jobs:
-  label:
+  create_issues:
 
     runs-on: ubuntu-latest
 
     steps:
-    - uses: paulovitin/create_issues@0.0.1
+    - uses: paulovitin/create-issues@0.0.1
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
