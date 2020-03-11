@@ -9,6 +9,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: paulovitin/create-issues@0.0.1
+    - uses: paulovitin/create-issues@0.0.1b
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
