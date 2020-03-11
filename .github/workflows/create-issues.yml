@@ -1,0 +1,14 @@
+name: Create Issues
+on:
+  issue_comment:
+    type: [created]
+
+jobs:
+  label:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: paulovitin/create_issues@master
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
