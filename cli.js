@@ -1,9 +1,8 @@
 #!/usr/bin/env node
-const clipboardy = require('clipboardy');
-const program = require('commander')
-const Table = require('cli-table');
-const qrcodeGen = require('qrcode-terminal');
-const TwoFA = require('./TwoFA');
+import clipboardy from 'clipboardy';
+import { program } from 'commander';
+import Table from 'cli-table';
+import TwoFA from './TwoFA.js';
 
 const twofa = new TwoFA();
 
@@ -12,7 +11,7 @@ const __stdout = message => {
 };
 
 __stdout.error = message =>
-  __stdout(`\x1b[31m[1m${message}`);
+  __stdout(`\x1b[31m\u001b[1m${(message && message.message) || message}`);
 __stdout.success = message =>
   __stdout(`\x1b[32m[1m${message}`);
 __stdout.code = code =>

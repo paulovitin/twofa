@@ -1,40 +1,49 @@
-const promisify = func => (...args) =>
-  new Promise((resolve, reject) =>
-    func(...args, (err, result) => (err ? reject(err) : resolve(result)))
-  );
+import { createRequire } from 'module';
+import ServiceStore from './ServiceStore.js';
+import QRCodeSource from './QRCodeSource.js';
+import TwoFAError from './TwoFAError.js';
 
-const Conf = require('conf');
-const jimpRead = promisify(require('jimp').read);
-const jsQR = require('jsqr');
-const fs = require('fs');
+const require = createRequire(import.meta.url);
 const OTPAuth = require('otpauth');
 const qrcode = require('qrcode-terminal');
-const screencapture = promisify(require('screencapture'));
 
+/**
+ * The enrollment / generation domain.
+ *
+ * Persistence and image capture are injected adapters (accept dependencies,
+ * don't create them), so tests can build this with an in-memory store and a
+ * faked screen capture instead of reaching into internals.
+ *
+ * Every rejection is a TwoFAError: `{ code, message }`.
+ */
 class TwoFA {
-  constructor() {
-    this.store = new Conf(this);
-    this.screencap = screencapture;
+  constructor({ store = new ServiceStore(), qrSource = new QRCodeSource() } = {}) {
+    this.store = store;
+    this.qrSource = qrSource;
   }
 
   add(service, options) {
     options = options || {};
 
-    if (this._storeExists(service)) {
-      return Promise.reject(`A service with name '${service}' already exists.`);
+    if (this.store.find(service)) {
+      return Promise.reject(TwoFAError.alreadyExists(service));
     }
 
-    const promise = options.imagePath ?
-      this._readQRCode(options.imagePath) : this._captureAndReadQRCode() ;
+    return this.qrSource.captureQRCode(options)
+      .then(uri => this.enroll(service, uri));
+  }
 
-    return promise
+  enroll(service, uri) {
+    return Promise.resolve(uri)
       .then(uri => OTPAuth.URI.parse(uri))
-      .then(otpauth => this.store.set(service, otpauth.toString()))
-      .then(() => this.gen(service));
+      .then(otpauth => {
+        this.store.put(service, otpauth.toString());
+        return this.gen(service);
+      });
   }
 
   del(service) {
-    return this._storeDel(service);
+    return this._getURI(service).then(() => this.store.remove(service));
   }
 
   gen(service) {
@@ -42,84 +51,36 @@ class TwoFA {
       return this._genAll();
     }
 
-    return this._storeGet(service)
+    return this._getURI(service)
       .then(uri => OTPAuth.URI.parse(uri))
       .then(otpauth => ({
         code: otpauth.generate(),
         label: otpauth.label,
-        service: service,
+        service,
       }));
   }
 
   qrcode(service) {
-    return this._storeGet(service)
-      .then(uri => {
-        return new Promise(resolve =>
-          qrcode.generate(uri, { small: true }, qrcode => resolve(qrcode))
-        )
-      });
-  }
-
-  _captureAndReadQRCode() {
-    return this.screencap()
-      .then(imagePath => {
-        this.lastQRCode = imagePath;
-        return imagePath;
-      })
-      .then(image => this._readQRCode(image))
-      .catch((e) => {
-        const error = e instanceof Object ?
-          'The image capture failed or user canceled.' : e;
-
-        return Promise.reject(error);
-      });
+    return this._getURI(service)
+      .then(uri => new Promise(resolve =>
+        qrcode.generate(uri, { small: true }, result => resolve(result))
+      ));
   }
 
   _genAll() {
-    const services = Object.keys(this.store.get() || {});
-
-    const codes = [];
-    services.forEach(service => {
-      codes.push(this.gen(service));
-    });
-
-    return Promise.all(codes);
+    const names = Object.keys(this.store.all() || {});
+    return Promise.all(names.map(service => this.gen(service)));
   }
 
-  _readQRCode(imagePath) {
-    const buffer = fs.readFileSync(imagePath);
+  _getURI(service) {
+    const uri = this.store.find(service);
 
-    return jimpRead(buffer)
-      .then(image => {
-        const bitmap = image.bitmap
-        const code = jsQR(bitmap.data, bitmap.width, bitmap.height) || {};
-
-        if (!{}.hasOwnProperty.call(code, 'data')) {
-          return Promise.reject('Invalid qrcode image. Try again.');
-        }
-
-        return code.data;
-      });
-  }
-
-  _storeDel(service) {
-    return this._storeGet(service)
-      .then(() => this.store.delete(service));
-  }
-
-  _storeExists(service) {
-    return !!this.store.get(service);
-  }
-
-  _storeGet(service) {
-    const value = this.store.get(service);
-
-    if (!value) {
-      return Promise.reject(`A service with name '${service}' not exists.`);
+    if (!uri) {
+      return Promise.reject(TwoFAError.notFound(service));
     }
 
-    return Promise.resolve(value);
+    return Promise.resolve(uri);
   }
 }
 
-module.exports = TwoFA;
+export default TwoFA;
